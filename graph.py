@@ -186,11 +186,7 @@ class Graph:
             showlegend=False,
             hovermode='closest',
             margin=dict(b=0, l=0, r=0, t=40),
-            annotations=[dict(
-                text="Artists Collaboration Graph",
-                showarrow=False,
-                xref="paper", yref="paper",
-                x=0.005, y=-0.002)],
+            annotations=[],
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
 

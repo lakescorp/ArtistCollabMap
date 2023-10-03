@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 import plotly
-import plotly.graph_objs as go
 import json
 from spoManager import SpotifyManager
 from graph import Graph
@@ -19,11 +18,29 @@ graphInstance = Graph()
 artistSongs = {}
 
 # Layout for Dash application
-dash_app.layout = html.Div([
-    html.Div([
-        dcc.Graph(id='artist-network'),
-        html.Div(id='click-data', children='Click on a node to see more details')
-    ], id='plotly-div')])
+dash_app.layout = html.Div(style={"display": "flex", "height": "100%"}, children=[
+    # Contenedor para el gráfico
+    html.Div(style={"width": "50%", "paddingBottom": "50%", "position": "relative", "flexShrink": 0}, children=[
+        dcc.Graph(id='artist-network', style={
+            "position": "absolute",
+            "height": "100%",
+            "width": "100%",
+            "top": "0",
+            "left": "0"
+        }),
+    ]),
+    # Div de la derecha
+    html.Div(id='click-data', children='Click on a node to see more details', style={
+        "flex": "1",
+        "height": "100%",
+        "overflow-y": "auto", 
+    })
+])
+
+
+
+
+
 
 # Endpoint for home page
 @app.route('/')
@@ -84,12 +101,17 @@ def display_click_data(clickData):
     Returns:
         str or html.Ul: The children to display in the click-data component.
     """
-    print(clickData)
     if clickData:
         node_clicked = clickData['points'][0]['customdata']
         songs_list = artistSongs.get(node_clicked, [])
-        print(node_clicked)
-        return html.Ul([html.Li(song) for song in songs_list])
+
+        # Nombre del artista como un título
+        artist_name = html.Div(node_clicked, style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px'})
+
+        # Luego añadir solo las canciones
+        song_items = [html.Li(song) for song in songs_list]
+
+        return html.Div([artist_name, html.Ul(song_items)])
     else:
         return 'Click on a node to see more details'
 

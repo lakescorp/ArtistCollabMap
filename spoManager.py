@@ -24,7 +24,38 @@ class SpotifyManager:
     def _save_response(self, path, data):
         utils.saveResponse(data, path)
 
+    def _save_iteration(self, data, folder, iteration):
+        filename = os.path.join(folder, f"iteration_{iteration}.json")
+        utils.saveResponse(data, filename)
+
+    def search_artist(self, query, limit=1):
+        """
+        Search for an artist by name.
+        
+        Parameters:
+        - query: The search string for the artist name.
+        - limit: The number of results to return. Defaults to 1.
+        
+        Returns the first artist ID from the results or None if no results.
+        """
+        results = self.sp.search(q=query, limit=limit, type='artist')
+        items = results.get('artists', {}).get('items', [])
+        
+        return items[0]['id'] if items else None
+
     def getArtistCollabs(self, artist_id, force=False):
+        # First, we'll attempt to determine if the input is a name or ID.
+        # If the input does not start with the Spotify URL prefix and does not seem to have the format of a Spotify ID,
+        # then we'll assume it's a name and try to search for it.
+        if not (artist_id.startswith(ARTIST_URL_PREFIX) or len(artist_id) == 22):
+            searched_artist_id = self.search_artist(artist_id)
+            if not searched_artist_id:
+                raise ValueError(f"No artist found for the query: {artist_id}")
+            artist_id = searched_artist_id
+
+
+        seen_preview_urls = set()
+
         artist_id = self._get_artist_id_from_url(artist_id)
         artist_folder = ARTIST_PATH.format(artist_id)
 
@@ -46,6 +77,7 @@ class SpotifyManager:
 
             if not response.get('next'):
                 all_artist_details = []
+                ids_to_fetch = [] # TODO
                 for i in range(0, len(ids_to_fetch), 50):
                     ids_chunk = ids_to_fetch[i:i+50]
                     chunk_details = self.sp.artists(ids_chunk)
@@ -69,6 +101,9 @@ class SpotifyManager:
                 album_tracks = self.sp.album_tracks(album["uri"])
 
                 for track in album_tracks['items']:
+                    if track['preview_url'] in seen_preview_urls:
+                        continue
+                    seen_preview_urls.add(track['preview_url'])
                     artists = [a["name"] for a in track['artists']]
                     if artist_name in artists:
                         track_list = registered_songs.setdefault(track["name"], [])
