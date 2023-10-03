@@ -1,4 +1,4 @@
-# 🎵 Artist Network Generator 🎵
+# 🎵 ArtistCollabMap 🎵
 
 This application generates a network graph of artist collaborations using the Spotify API. Input a Spotify artist URL, and the program will showcase a visualization of that artist's collaborations with other artists.
 
@@ -24,6 +24,10 @@ This application generates a network graph of artist collaborations using the Sp
 1. Access the application via your web browser.
 2. Enter a Spotify artist's profile URL.
 3. Click on "Generate Graph" to view the artist's collaborations.
+   
+## 📘 Wiki:
+
+For more detailed guides on installation, setup, usage, and troubleshooting, please check our [Wiki](https://github.com/lakescorp/ArtistCollabMap/wiki).
 
 ### 🤝 Contributions:
 
