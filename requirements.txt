@@ -1,0 +1,10 @@
+certifi==2023.7.22
+dash==2.13.0
+dash-core-components==2.0.0
+dash-html-components==2.0.0
+dash-table==5.0.0
+Flask==2.2.5
+networkx==2.8.8
+plotly==5.17.0
+scipy==1.11.3
+spotipy==2.21.0

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Network</title>
+</head>
+<body>
+    <form action="/generate" method="POST">
+        <label for="artist_link">Artista:</label>
+        <input type="text" id="artist_link" name="artist_link">
+        <button type="submit">Generar Grafo</button>
+    </form>
+    <div>
+        {% if graphJSON %}
+            <iframe src="/generate/" width="100%" height="600"></iframe>
+        {% endif %}
+    </div>
+</body>
+</html>
