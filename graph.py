@@ -3,6 +3,7 @@ import networkx as nx
 from datetime import datetime as dt
 import os
 import random
+from utilities import Utilities as utils
 
 class Graph:
     def __init__(self, debug=False):
@@ -11,35 +12,7 @@ class Graph:
         self.color_list = ["#FF5454",'#FF9E54','#FFD454','#DAFF54','#A7FF54','#54FF7F','#54FFE3','#54DAFF','#AF54FF','#E054FF','#FF54EE','#FF5496','#FF545A']
         self.debug = debug
 
-    def normalize(self, arr, t_min, t_max):
-        """
-        Normalize an array of values to a specified range.
 
-        Parameters:
-            arr (list): The input array of values.
-            t_min (float): The minimum value of the target range.
-            t_max (float): The maximum value of the target range.
-
-        Returns:
-            list: The normalized array of values.
-        """
-        norm_arr = []
-        diff = t_max - t_min
-        diff_arr = max(arr) - min(arr)
-        for i in arr:
-            temp = (((i - min(arr))*diff)/diff_arr) + t_min
-            norm_arr.append(temp)
-        return norm_arr
-
-    def random_color(self):
-        """
-        Generate a random color in hexadecimal format.
-
-        Returns:
-            str: A random color in hexadecimal format (e.g., '#00FF00').
-        """
-        r = lambda: random.randint(0,255)
-        return '#%02X%02X%02X' % (r(), r(), r())
 
     def random_color_from_list(self):
         """
@@ -81,7 +54,7 @@ class Graph:
             deltas_datetime[key] = delta.days + 1
 
         deltas_to_regularize = deltas_datetime.values()
-        deltas_regularized = self.normalize(deltas_to_regularize, 1, 10)
+        deltas_regularized = utils.normalize(deltas_to_regularize, 1, 10)
 
         index = 0
         for key, val in deltas_datetime.items():
@@ -116,7 +89,7 @@ class Graph:
                             if not G.has_edge(reduced_list[i], reduced_list[x]):
                                 G.add_edge(reduced_list[i], reduced_list[x], color='g')
 
-        node_sizes = self.normalize(node_sizes, 0.1, 1)
+        node_sizes = utils.normalize(node_sizes, 0.1, 1)
         node_sizes = [item * self.node_base_size for item in node_sizes]
 
         pos = nx.kamada_kawai_layout(G)

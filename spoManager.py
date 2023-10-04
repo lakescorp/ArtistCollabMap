@@ -24,10 +24,6 @@ class SpotifyManager:
     def _save_response(self, path, data):
         utils.saveResponse(data, path)
 
-    def _save_iteration(self, data, folder, iteration):
-        filename = os.path.join(folder, f"iteration_{iteration}.json")
-        utils.saveResponse(data, filename)
-
     def search_artist(self, query, limit=1):
         """
         Search for an artist by name.
@@ -85,7 +81,9 @@ class SpotifyManager:
 
                 artists_details = {'artists': all_artist_details}
                 
-                artist_profile_urls = {artist['id']: artist['images'][0]['url'] if artist['images'] else None for artist in artists_details['artists']}
+                artist_profile_urls = {artist['id']: {"url": artist['images'][0]['url'] if artist['images'] else None, 
+                                      "genres": artist['genres'] if 'genres' in artist else []} for artist in artists_details['artists']}
+
                 self._save_response(os.path.join(artist_folder, "artistProfileUrls.json"), artist_profile_urls)
 
                 last_collab_artist = {key: elem.strftime('%Y-%m-%d') for key, elem in last_collab_artist.items()}
