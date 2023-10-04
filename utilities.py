@@ -18,7 +18,7 @@ class Utilities:
             data = json.load(json_file)
             return data
 
-    def random_color(self):
+    def random_color():
         """
         Generate a random color in hexadecimal format.
 
@@ -28,7 +28,7 @@ class Utilities:
         r = lambda: random.randint(0,255)
         return '#%02X%02X%02X' % (r(), r(), r())
     
-    def normalize(self, arr, t_min, t_max):
+    def normalize(arr, t_min, t_max):
         """
         Normalize an array of values to a specified range.
 
