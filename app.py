@@ -107,10 +107,25 @@ def display_click_data(clickData):
     node_clicked_id = clickData['points'][0]['customdata']
     songs_list = artist_data_store["songs"].get(node_clicked_id, [])
 
-    artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
-    artist_name = html.Div(artist_name_display, style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px'})
+    # Obtener la URL de la imagen del artista y crear el elemento de imagen
+    artist_image_url = artist_data_store["artist_info"][node_clicked_id]['url']
+    artist_image = html.Img(src=artist_image_url, style={
+        "width": "50px", 
+        "height": "50px", 
+        "borderRadius": "50%",  # Esta línea redondeará la imagen
+        "marginRight": "10px"   # Espacio a la derecha de la imagen
+    })
 
-    # Crear elementos para la galería
+    artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
+    artist_name = html.Div([artist_image, artist_name_display], style={
+        'fontWeight': 'bold', 
+        'fontSize': 'larger', 
+        'marginBottom': '10px',
+        'display': 'flex',     # Esto permite que los elementos hijos (imagen y nombre) estén uno al lado del otro
+        'alignItems': 'center' # Centra verticalmente los elementos
+    })
+
+    # Crear elementos para la galería (esto permanece igual que antes)
     gallery_items = []
     for song_id in songs_list:
         song_info = artist_data_store["registered_songs"][song_id]
@@ -121,6 +136,7 @@ def display_click_data(clickData):
         gallery_items.append(gallery_item)
 
     return html.Div([artist_name] + gallery_items)
+
 
 
 
