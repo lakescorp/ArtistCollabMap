@@ -16,6 +16,8 @@ dash_app = dash.Dash(__name__,
 spoManagerInstance = SpotifyManager(True)
 graphInstance = Graph()
 artistSongs = {}
+global_artist_info = {} 
+global_registered_songs = {}
 
 # Layout for Dash application
 dash_app.layout = html.Div(style={"display": "flex", "height": "100%"}, children=[
@@ -65,22 +67,23 @@ def generate():
     Returns:
         str: The rendered index.html page with the graph data.
     """
-    global artistSongs
+    global artistSongs, global_artist_info, global_registered_songs
     graphJSON = None
 
     if request.method == 'POST':
-        artist_link = request.form['artist_link']
-        total_artists, registered_songs, last_artist_collab, artist_data, artist_profile_urls = spoManagerInstance.getArtistCollabs(artist_link, False)
-        
+        print("Generate")
+        input_artist = request.form['artist_link']
+        total_artists, global_registered_songs, last_artist_collab, artist_data, global_artist_info = spoManagerInstance.getArtistCollabs(input_artist, False)
+
         artistSongs = {}
-        for song, artists_list in registered_songs.items():
-            for artists in artists_list:
+        for song, info_song in global_registered_songs.items():
+            for artists in info_song["collaborations"]:
                 for artist in artists:
                     if artist not in artistSongs:
                         artistSongs[artist] = []
                     artistSongs[artist].append(song)
 
-        fig = graphInstance.generate_graph(total_artists, registered_songs, last_artist_collab, artist_data, artist_profile_urls, 0)
+        fig = graphInstance.generate_graph(total_artists, global_registered_songs, last_artist_collab, artist_data, global_artist_info, 0)
         dash_app.layout['artist-network'].figure = fig
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
@@ -92,28 +95,22 @@ def generate():
     [Input('artist-network', 'clickData')]
 )
 def display_click_data(clickData):
-    """
-    Generate a function comment for the given function body.
-
-    Parameters:
-        clickData (dict): The click data from the artist network.
-
-    Returns:
-        str or html.Ul: The children to display in the click-data component.
-    """
     if clickData:
-        node_clicked = clickData['points'][0]['customdata']
-        songs_list = artistSongs.get(node_clicked, [])
+        node_clicked_id = clickData['points'][0]['customdata']
+        print(node_clicked_id)
+        songs_list = artistSongs.get(node_clicked_id, [])
+        print(songs_list)
 
-        # Nombre del artista como un título
-        artist_name = html.Div(node_clicked, style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px'})
 
-        # Luego añadir solo las canciones
-        song_items = [html.Li(song) for song in songs_list]
+        artist_name_display = global_artist_info[node_clicked_id]['name']
+        artist_name = html.Div(artist_name_display, style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px'})
+
+        song_items = [html.Li(html.A(global_registered_songs[song_id]['name'], href=global_registered_songs[song_id]['url'], target="_blank")) for song_id in songs_list]
 
         return html.Div([artist_name, html.Ul(song_items)])
     else:
         return 'Click on a node to see more details'
+
 
 # Running the Flask app
 if __name__ == '__main__':

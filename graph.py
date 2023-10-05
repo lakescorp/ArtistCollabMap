@@ -23,7 +23,7 @@ class Graph:
         """
         return self.color_list[random.randrange(0,len(self.color_list))]
 
-    def generate_graph(self, total_artists, registered_songs, last_collab_artist, artist_data, artist_profile_urls, level=0):
+    def generate_graph(self, total_artists, registered_songs, last_collab_artist, artist_data, artists_info, level=0):
         """
         Generates a graph based on the given data.
 
@@ -41,7 +41,7 @@ class Graph:
         max_value = max(total_artists, key=total_artists.get)
         artists_copy = total_artists.copy()  # Copy the original dictionary
         del artists_copy[max_value]  # Remove the main artist
-        second_max_value = max(artists_copy, key=artists_copy.get) 
+        second_max_value = max(artists_copy, key=artists_copy.get)
         
         for key, elem in last_collab_artist.items():
             last_collab_artist[key] = dt.strptime(elem,'%Y-%m-%d')
@@ -94,7 +94,7 @@ class Graph:
 
         pos = nx.kamada_kawai_layout(G)
         
-        node_labels = {node: node for node in G.nodes()}
+        node_labels = {node: artists_info[node]['name'] for node in G.nodes()}
 
         edge_trace = go.Scatter(
             x=[],
@@ -139,21 +139,24 @@ class Graph:
 
         for node in G.nodes():
             x, y = pos[node]
+
             node_trace['x'] += (x,)
             node_trace['y'] += (y,)
 
+            artist_name = artists_info[node]['name']  # Usamos 'artists_info' para obtener el nombre del artista a partir de su ID.
+            
             if node == max_value:
-                node_label = "Collabs: {}".format(total_artists[node])
+                node_label = "{}\nCollabs: {}".format(artist_name, total_artists[node])
             else:
                 last_collab_date = last_collab_artist[node].strftime('%d-%m-%Y')
-                node_label = "Collabs: {}\nLast: {}".format(total_artists[node], last_collab_date)
+                node_label = "{}\nCollabs: {}\nLast: {}".format(artist_name, total_artists[node], last_collab_date)
 
             node_trace['text'] += (node_label,)
             node_trace['customdata'] += (node,)
 
             label_trace['x'] += (x,)
             label_trace['y'] += (y,)
-            label_trace['text'] += (node_labels[node],)
+            label_trace['text'] += (node_labels[node],) 
 
         layout = go.Layout(
             showlegend=False,
