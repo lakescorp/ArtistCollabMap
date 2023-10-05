@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
-import plotly
 import json
+import plotly.utils
 from spoManager import SpotifyManager
 from graph import Graph
 import dash
@@ -15,9 +15,11 @@ dash_app = dash.Dash(__name__,
 
 spoManagerInstance = SpotifyManager(True)
 graphInstance = Graph()
-artistSongs = {}
-global_artist_info = {} 
-global_registered_songs = {}
+artist_data_store = {
+    "songs": {},
+    "artist_info": {},
+    "registered_songs": {}
+}
 
 # Layout for Dash application
 dash_app.layout = html.Div(style={"display": "flex", "height": "100%"}, children=[
@@ -40,7 +42,17 @@ dash_app.layout = html.Div(style={"display": "flex", "height": "100%"}, children
 ])
 
 
+# Helper function for processing artist collabs
+def process_artist_collabs(input_artist):
+    total_artists, registered_songs, last_artist_collab, artist_data, artist_info = spoManagerInstance.getArtistCollabs(input_artist, False)
+    artist_songs = {}
 
+    for song, info_song in registered_songs.items():
+        for artists in info_song["collaborations"]:
+            for artist in artists:
+                artist_songs.setdefault(artist, []).append(song)
+
+    return total_artists, registered_songs, last_artist_collab, artist_data, artist_info, artist_songs
 
 
 
@@ -67,23 +79,17 @@ def generate():
     Returns:
         str: The rendered index.html page with the graph data.
     """
-    global artistSongs, global_artist_info, global_registered_songs
     graphJSON = None
 
     if request.method == 'POST':
-        print("Generate")
         input_artist = request.form['artist_link']
-        total_artists, global_registered_songs, last_artist_collab, artist_data, global_artist_info = spoManagerInstance.getArtistCollabs(input_artist, False)
+        total_artists, registered_songs, last_artist_collab, artist_data, artist_info, artist_songs = process_artist_collabs(input_artist)
 
-        artistSongs = {}
-        for song, info_song in global_registered_songs.items():
-            for artists in info_song["collaborations"]:
-                for artist in artists:
-                    if artist not in artistSongs:
-                        artistSongs[artist] = []
-                    artistSongs[artist].append(song)
+        artist_data_store["songs"] = artist_songs
+        artist_data_store["artist_info"] = artist_info
+        artist_data_store["registered_songs"] = registered_songs
 
-        fig = graphInstance.generate_graph(total_artists, global_registered_songs, last_artist_collab, artist_data, global_artist_info, 0)
+        fig = graphInstance.generate_graph(total_artists, registered_songs, last_artist_collab, artist_data, artist_info, 0)
         dash_app.layout['artist-network'].figure = fig
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
@@ -95,21 +101,18 @@ def generate():
     [Input('artist-network', 'clickData')]
 )
 def display_click_data(clickData):
-    if clickData:
-        node_clicked_id = clickData['points'][0]['customdata']
-        print(node_clicked_id)
-        songs_list = artistSongs.get(node_clicked_id, [])
-        print(songs_list)
-
-
-        artist_name_display = global_artist_info[node_clicked_id]['name']
-        artist_name = html.Div(artist_name_display, style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px'})
-
-        song_items = [html.Li(html.A(global_registered_songs[song_id]['name'], href=global_registered_songs[song_id]['url'], target="_blank")) for song_id in songs_list]
-
-        return html.Div([artist_name, html.Ul(song_items)])
-    else:
+    if not clickData:
         return 'Click on a node to see more details'
+
+    node_clicked_id = clickData['points'][0]['customdata']
+    songs_list = artist_data_store["songs"].get(node_clicked_id, [])
+
+    artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
+    artist_name = html.Div(artist_name_display, style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px'})
+
+    song_items = [html.Li(html.A(artist_data_store["registered_songs"][song_id]['name'], href=artist_data_store["registered_songs"][song_id]['url'], target="_blank")) for song_id in songs_list]
+
+    return html.Div([artist_name, html.Ul(song_items)])
 
 
 # Running the Flask app

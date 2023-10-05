@@ -88,7 +88,7 @@ class SpotifyManager:
             response = self.sp.artist_albums(artist_id, album_type="album,single,appears_on", offset=offset)
             if not response.get('next'):
                 all_artist_details = []
-                # ids_to_fetch = [] # TODO
+
                 for i in range(0, len(ids_to_fetch), 50):
                     ids_chunk = ids_to_fetch[i:i+50]
                     chunk_details = self.sp.artists(ids_chunk)
