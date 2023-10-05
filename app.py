@@ -79,7 +79,7 @@ def generate():
     Returns:
         str: The rendered index.html page with the graph data.
     """
-    graphJSON = None
+    graphJSON, artist_name, artist_image = None, None, None
 
     if request.method == 'POST':
         input_artist = request.form['artist_link']
@@ -93,7 +93,11 @@ def generate():
         dash_app.layout['artist-network'].figure = fig
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return render_template('index.html', graphJSON=graphJSON)
+        artist_name = artist_data_store["artist_info"].get(artist_data["id"], {}).get('name', None) if artist_data else None
+        artist_image = artist_data_store["artist_info"].get(artist_data["id"], {}).get('url', None) if artist_data else None
+
+    return render_template('index.html', graphJSON=graphJSON, artist_name=artist_name, artist_image=artist_image)
+
 
 # Callback for displaying songs of the clicked artist on the graph
 @dash_app.callback(
