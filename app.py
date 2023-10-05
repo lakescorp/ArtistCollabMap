@@ -110,9 +110,18 @@ def display_click_data(clickData):
     artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
     artist_name = html.Div(artist_name_display, style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px'})
 
-    song_items = [html.Li(html.A(artist_data_store["registered_songs"][song_id]['name'], href=artist_data_store["registered_songs"][song_id]['url'], target="_blank")) for song_id in songs_list]
+    # Crear elementos para la galería
+    gallery_items = []
+    for song_id in songs_list:
+        song_info = artist_data_store["registered_songs"][song_id]
+        song_title = html.Div(song_info['name'], style={"textAlign": "center"})
+        song_thumbnail = html.Img(src=song_info['thumbnail'], style={"width": "100px", "display": "block", "margin": "auto"})
+        song_item = html.Div([song_thumbnail, song_title], style={"display": "inline-block", "margin": "10px"})
+        gallery_item = html.A(song_item, href=song_info['url'], target="_blank")
+        gallery_items.append(gallery_item)
 
-    return html.Div([artist_name, html.Ul(song_items)])
+    return html.Div([artist_name] + gallery_items)
+
 
 
 # Running the Flask app

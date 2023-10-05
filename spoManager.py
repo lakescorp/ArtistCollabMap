@@ -129,7 +129,8 @@ class SpotifyManager:
                             "name": track["name"],
                             "url": album["external_urls"]["spotify"],
                             "artists": artist_ids,
-                            "collaborations": []
+                            "collaborations": [],
+                            "thumbnail": album["images"][1]["url"]
                         })
                         if artist_ids not in track_data["collaborations"]:
                             track_data["collaborations"].append(artist_ids)
