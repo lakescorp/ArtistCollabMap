@@ -7,7 +7,7 @@ from dash.exceptions import PreventUpdate
 
 dash_app = dash.Dash(__name__)
 
-
+ARTIST_URL_PREFIX = "https://open.spotify.com/artist/"
 spoManagerInstance = SpotifyManager(True)
 graphInstance = Graph()
 artist_data_store = {
@@ -20,8 +20,18 @@ dash_app.layout = html.Div(style={"display": "flex", "height": "100%", "flexDire
     html.Div(style={"display": "flex", "justifyContent": "space-between", "alignItems": "center", "marginBottom": "20px"}, children=[
 
         html.Div(children=[
-            html.Label("Artist:", htmlFor="artist_link"),
-            dcc.Input(type="text", id="artist_link"),
+            dcc.Input(
+                type="text", 
+                id="artist_link",
+                placeholder="Enter the artist name or link", 
+                style={
+                    "borderRadius": "50px",  
+                    "border": "2px solid black",  
+                    "marginRight": "10px",  
+                    "paddingLeft": "5px",
+                    "paddingRight": "5px"
+                }
+            ),
             html.Button("Generate graph", id="generate-button", style={
                 "backgroundColor": "#1DB954", 
                 "border": "none",
@@ -123,7 +133,15 @@ def display_click_data(clickData):
 
 
     artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
-    artist_name = html.Div([artist_image, artist_name_display, generate_button_for_artist], style={
+    artist_spotify_url = ARTIST_URL_PREFIX + node_clicked_id
+    artist_name_link = html.A([artist_image, artist_name_display], href=artist_spotify_url, target="_blank", className="artist-link", style={
+                              "textDecoration": "none", 
+                              "color": "inherit", 
+                              "display": "flex", 
+                              "alignItems": "center"
+                          })
+
+    artist_name = html.Div([artist_name_link, generate_button_for_artist], style={
         'fontWeight': 'bold', 
         'fontSize': 'larger', 
         'marginBottom': '10px',
@@ -203,7 +221,7 @@ def unified_update_graph(n_clicks_generate, n_clicks_selected, input_artist, art
 
     artist_details = []
     if artist_name and artist_image:
-        artist_details.append(html.Div(artist_name, style={"marginRight": "10px"}))
+        artist_details.append(html.Div(artist_name, style={"marginRight": "10px", "fontSize": "larger", "fontWeight": "bold"}))
         artist_details.append(html.Img(src=artist_image, alt=artist_name, style={"width": "50px", "height": "50px", "borderRadius": "50%"}))
 
 

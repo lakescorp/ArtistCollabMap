@@ -4,8 +4,6 @@ from datetime import datetime as dt
 from spotipy.oauth2 import SpotifyOAuth
 from utilities import Utilities as utils
 from dotenv import load_dotenv
-import time
-from random import randint
 
 ARTIST_PATH = os.path.join(".", "data", "{}")
 ARTIST_URL_PREFIX = "https://open.spotify.com/artist/"
