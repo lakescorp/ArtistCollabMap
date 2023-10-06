@@ -133,17 +133,14 @@ def display_click_data(clickData):
         song_info = artist_data_store["registered_songs"][song_id]
         song_title = html.Div(song_info['name'], style={"textAlign": "center"})
 
-        # Elemento de audio para la vista previa
         audio_preview = html.Audio(src=song_info['preview'], id=f"audio-{song_id}", controls=False)  # Sin controles
 
-        # Agrega los atributos de mouseover y mouseout al thumbnail de la canción
         song_thumbnail = html.Img(src=song_info['thumbnail'], 
                              className="song-thumbnail", 
                              style={"width": "100px", "display": "block", "margin": "auto"},
                              **{'data-song-id': song_id})
 
 
-        # Agrupamos todo en un div
         song_item = html.Div([song_thumbnail, song_title, audio_preview], style={"display": "inline-block", "margin": "10px"})
 
         gallery_item = html.A(song_item, href=song_info['url'], target="_blank")
