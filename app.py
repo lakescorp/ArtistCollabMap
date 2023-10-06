@@ -1,17 +1,12 @@
-from flask import Flask, render_template, request
-import json
-import plotly.utils
 from spoManager import SpotifyManager
 from graph import Graph
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 
-app = Flask(__name__)
-dash_app = dash.Dash(__name__, 
-                     server=app, 
-                     routes_pathname_prefix='/generate/',
-                     requests_pathname_prefix='/generate/')
+dash_app = dash.Dash(__name__)
+
 
 spoManagerInstance = SpotifyManager(True)
 graphInstance = Graph()
@@ -21,25 +16,47 @@ artist_data_store = {
     "registered_songs": {}
 }
 
-# Layout for Dash application
-dash_app.layout = html.Div(style={"display": "flex", "height": "100%"}, children=[
-    # Contenedor para el gráfico
-    html.Div(style={"width": "50%", "paddingBottom": "50%", "position": "relative", "flexShrink": 0}, children=[
-        dcc.Graph(id='artist-network', style={
-            "position": "absolute",
-            "height": "100%",
-            "width": "100%",
-            "top": "0",
-            "left": "0"
-        }),
+dash_app.layout = html.Div(style={"display": "flex", "height": "100%", "flexDirection": "column"}, children=[
+    # Formulario en la parte superior
+    html.Div(style={"display": "flex", "justifyContent": "space-between", "alignItems": "center", "marginBottom": "20px"}, children=[
+        # Formulario
+        html.Div(children=[
+            html.Label("Artist:", htmlFor="artist_link"),
+            dcc.Input(type="text", id="artist_link"),
+            html.Button("Generate graph", id="generate-button")
+        ]),
+        
+        # Detalles del artista (nombre e imagen)
+        html.Div(id="artist-details", style={"display": "flex", "alignItems": "center"})
     ]),
-    # Div de la derecha
-    html.Div(id='click-data', children='Click on a node to see more details', style={
-        "flex": "1",
-        "height": "100%",
-        "overflow-y": "auto", 
-    })
+    
+    # Contenedor principal para gráfico y galería
+    html.Div(style={"display": "flex", "height": "100%", "flexDirection": "row", "overflow": "hidden"}, children=[
+        # Contenedor para el gráfico
+        html.Div(id='graph-container', style={"width": "50%", "paddingBottom": "50%", "position": "relative", "flexShrink": 0}, children=[
+            dcc.Graph(id='artist-network', style={
+                "position": "absolute",
+                "height": "100%",
+                "width": "100%",
+                "top": "0",
+                "left": "0"
+            }),
+        ]),
+
+        # Galería de canciones a la derecha
+        html.Div(id='click-data', style={
+            "flex": "1",
+            "overflowY": "auto",  # Hace que sea desplazable si el contenido supera la altura
+            "maxHeight": "500px",  # Puedes ajustar esto según lo que necesites
+            "width": "50%",
+            "paddingLeft": "20px"
+        }, children='Click on a node to see more details')
+    ])
 ])
+
+
+
+
 
 
 # Helper function for processing artist collabs
@@ -56,47 +73,44 @@ def process_artist_collabs(input_artist):
 
 
 
-# Endpoint for home page
-@app.route('/')
-def index():
-    """
-    Route decorator for the root URL.
+@dash_app.callback(
+    [
+        Output('artist-network', 'figure'),
+        Output('artist-details', 'children')
+    ],
+    [
+        Input('generate-button', 'n_clicks')
+    ],
+    [
+        State('artist_link', 'value')
+    ]
+)
+def update_graph(n_clicks, input_artist):
+    if not n_clicks or not input_artist:
+        raise PreventUpdate
+
+    total_artists, registered_songs, last_artist_collab, artist_data, artist_info, artist_songs = process_artist_collabs(input_artist)
+
+    artist_data_store["songs"] = artist_songs
+    artist_data_store["artist_info"] = artist_info
+    artist_data_store["registered_songs"] = registered_songs
+
+    fig = graphInstance.generate_graph(total_artists, registered_songs, last_artist_collab, artist_data, artist_info, 0)
     
-    Returns:
-        The rendered index.html template.
-    """
-    return render_template('index.html')
+    artist_name = artist_data_store["artist_info"].get(artist_data["id"], {}).get('name', None) if artist_data else None
+    artist_image = artist_data_store["artist_info"].get(artist_data["id"], {}).get('url', None) if artist_data else None
 
-# Endpoint for generating graph based on the artist's collaborations
-@app.route('/generate', methods=['GET', 'POST'])
-def generate():
-    """
-    Generates a graph and renders it on the index.html page.
+    # Crear detalles del artista para mostrar en el layout
+    artist_details = []
+    if artist_name and artist_image:
+        artist_details.append(html.Div(artist_name, style={"marginRight": "10px"}))
+        artist_details.append(html.Img(src=artist_image, alt=artist_name, style={"width": "50px", "height": "50px", "borderRadius": "50%"}))
 
-    Parameters:
-        None
+    # En este caso, dado que el gráfico ya está en el layout, no necesitamos crear un iframe. Simplemente devolvemos una lista vacía.
+    graph_container_content = []
 
-    Returns:
-        str: The rendered index.html page with the graph data.
-    """
-    graphJSON, artist_name, artist_image = None, None, None
+    return fig, artist_details
 
-    if request.method == 'POST':
-        input_artist = request.form['artist_link']
-        total_artists, registered_songs, last_artist_collab, artist_data, artist_info, artist_songs = process_artist_collabs(input_artist)
-
-        artist_data_store["songs"] = artist_songs
-        artist_data_store["artist_info"] = artist_info
-        artist_data_store["registered_songs"] = registered_songs
-
-        fig = graphInstance.generate_graph(total_artists, registered_songs, last_artist_collab, artist_data, artist_info, 0)
-        dash_app.layout['artist-network'].figure = fig
-        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
-        artist_name = artist_data_store["artist_info"].get(artist_data["id"], {}).get('name', None) if artist_data else None
-        artist_image = artist_data_store["artist_info"].get(artist_data["id"], {}).get('url', None) if artist_data else None
-
-    return render_template('index.html', graphJSON=graphJSON, artist_name=artist_name, artist_image=artist_image)
 
 
 # Callback para mostrar las canciones del artista clickeado en el gráfico
@@ -153,6 +167,5 @@ def display_click_data(clickData):
 
 
 
-# Running the Flask app
 if __name__ == '__main__':
-    app.run(debug=True)
+    dash_app.run_server(debug=True)
