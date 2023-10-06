@@ -99,7 +99,7 @@ def generate():
     return render_template('index.html', graphJSON=graphJSON, artist_name=artist_name, artist_image=artist_image)
 
 
-# Callback for displaying songs of the clicked artist on the graph
+# Callback para mostrar las canciones del artista clickeado en el gráfico
 @dash_app.callback(
     Output('click-data', 'children'),
     [Input('artist-network', 'clickData')]
@@ -111,13 +111,12 @@ def display_click_data(clickData):
     node_clicked_id = clickData['points'][0]['customdata']
     songs_list = artist_data_store["songs"].get(node_clicked_id, [])
 
-    # Obtener la URL de la imagen del artista y crear el elemento de imagen
     artist_image_url = artist_data_store["artist_info"][node_clicked_id]['url']
     artist_image = html.Img(src=artist_image_url, style={
         "width": "50px", 
         "height": "50px", 
-        "borderRadius": "50%",  # Esta línea redondeará la imagen
-        "marginRight": "10px"   # Espacio a la derecha de la imagen
+        "borderRadius": "50%",
+        "marginRight": "10px"
     })
 
     artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
@@ -125,21 +124,34 @@ def display_click_data(clickData):
         'fontWeight': 'bold', 
         'fontSize': 'larger', 
         'marginBottom': '10px',
-        'display': 'flex',     # Esto permite que los elementos hijos (imagen y nombre) estén uno al lado del otro
-        'alignItems': 'center' # Centra verticalmente los elementos
+        'display': 'flex',
+        'alignItems': 'center'
     })
 
-    # Crear elementos para la galería (esto permanece igual que antes)
     gallery_items = []
     for song_id in songs_list:
         song_info = artist_data_store["registered_songs"][song_id]
         song_title = html.Div(song_info['name'], style={"textAlign": "center"})
-        song_thumbnail = html.Img(src=song_info['thumbnail'], style={"width": "100px", "display": "block", "margin": "auto"})
-        song_item = html.Div([song_thumbnail, song_title], style={"display": "inline-block", "margin": "10px"})
+
+        # Elemento de audio para la vista previa
+        audio_preview = html.Audio(src=song_info['preview'], id=f"audio-{song_id}", controls=False)  # Sin controles
+
+        # Agrega los atributos de mouseover y mouseout al thumbnail de la canción
+        song_thumbnail = html.Img(src=song_info['thumbnail'], 
+                             className="song-thumbnail", 
+                             style={"width": "100px", "display": "block", "margin": "auto"},
+                             **{'data-song-id': song_id})
+
+
+        # Agrupamos todo en un div
+        song_item = html.Div([song_thumbnail, song_title, audio_preview], style={"display": "inline-block", "margin": "10px"})
+
         gallery_item = html.A(song_item, href=song_info['url'], target="_blank")
         gallery_items.append(gallery_item)
 
     return html.Div([artist_name] + gallery_items)
+
+
 
 
 
