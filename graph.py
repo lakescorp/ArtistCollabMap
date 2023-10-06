@@ -38,6 +38,8 @@ class Graph:
         Returns:
             fig (go.Figure): The generated graph figure.
         """
+        if not total_artists:  # Si el diccionario está vacío
+            raise ValueError("No artists found. Ensure your data source contains valid data.")
         max_value = max(total_artists, key=total_artists.get)
         artists_copy = total_artists.copy()  # Copy the original dictionary
         del artists_copy[max_value]  # Remove the main artist
