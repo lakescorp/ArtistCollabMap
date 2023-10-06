@@ -1,0 +1,9 @@
+.gallery-item-div {
+    transition: transform 0.3s;  /* Animación suave */
+    color: inherit; 
+    text-decoration: none;
+}
+
+.gallery-item-div:hover {
+    transform: scale(1.1);  /* Aumentar el tamaño en un 10% al pasar el mouse */
+}
