@@ -1,18 +1,23 @@
+/* Base styles */
+body {
+    background-color: #ffffff;  /* Default light background */
+    color: #000000;             /* Default light text color */
+}
+
 .gallery-item,
 .gallery-item * {
     color: inherit;
     text-decoration: none;
 }
 
-
 .gallery-item-div {
-    transition: transform 0.3s;  /* Animación suave */
+    transition: transform 0.3s;  /* Smooth transition */
     color: inherit; 
     text-decoration: none;
 }
 
 .gallery-item-div:hover {
-    transform: scale(1.1);  /* Aumentar el tamaño en un 10% al pasar el mouse */
+    transform: scale(1.1);  /* Increase size by 10% on hover */
 }
 
 .artist-link {
@@ -21,4 +26,13 @@
 
 .artist-link:hover {
     transform: scale(1.1);
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #181818;  /* Spotify dark background */
+        color: #f0f0f0;              /* Spotify dark text color */
+    }
+
 }
