@@ -11,6 +11,10 @@ body {
 }
 
 .input-button-container {
+    border: 1px solid #ccc;      /* Gray border */
+    border-radius: 50px;  
+    padding: 5px 5px;
+    background-color: #f8f8f8;  
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -20,9 +24,10 @@ body {
 .artist-input {
     border-radius: 50px;
     border: 2px solid black;
-    margin-right: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
     font-size: 1.2rem;
-    padding: 5px 10px; 
+    padding: 5px 20px; 
     height: 30px;
 }
 
@@ -32,7 +37,7 @@ body {
     border-radius: 25px;
     color: white;
     padding: 10px 20px; 
-    font-size: 1.2rem;
+    font-size: 1rem;
     height: 40px; 
     align-items: center;
 }
@@ -91,7 +96,8 @@ body {
     border-radius: 25px;
     color: white;
     margin-left: auto;
-    height: 30px;
+    height: 40px;
+    padding: 10px 20px;
 }
 
 
@@ -158,12 +164,32 @@ body {
     vertical-align: middle; 
 }
 
+.artist-name-container {
+    border: 1px solid #ccc;      /* Gray border */
+    border-radius: 50px;          /* Rounded corners */
+    padding: 10px;               /* Padding inside the container */
+    background-color: #f8f8f8;  /* Light gray background for light mode */
+    margin-bottom: 20px;         /* Space below the container */
+    font-weight: bold;
+    font-size: larger;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
 
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
     body {
         background-color: #181818;  /* Spotify dark background */
         color: #f0f0f0;              /* Spotify dark text color */
+    }
+    .artist-name-container {
+        border-color: #333;           /* Darker border for dark mode */
+        background-color: #202020;    /* Dark gray background for dark mode */
+    }
+    .input-button-container{
+        border-color: #333;           /* Darker border for dark mode */
+        background-color: #202020;    /* Dark gray background for dark mode */
     }
 
 }

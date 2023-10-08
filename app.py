@@ -107,7 +107,7 @@ def display_click_data(clickData):
     artist_name_link = html.A([artist_image, artist_name_display], href=artist_spotify_url, target="_blank", className="artist-link")
 
     artist_details_container = html.Div([
-        html.Div([artist_name_link, generate_button_for_artist], style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px', 'display': 'flex',"alignItems": "center"}),
+        html.Div([artist_name_link, generate_button_for_artist], className="artist-name-container"),
         html.Div([
             html.Div(f"📀 Total: {len(total_collaborations)}"),
             html.Div(f"📅 Last: {last_collab_date.strftime('%d-%m-%Y')}" if last_collab_date else ""),
