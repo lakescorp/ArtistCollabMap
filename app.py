@@ -16,58 +16,33 @@ artist_data_store = {
     "registered_songs": {}
 }
 
-dash_app.layout = html.Div(style={"display": "flex", "height": "100%", "flexDirection": "column"}, children=[
-    html.Div(style={"display": "flex", "justifyContent": "space-between", "alignItems": "center", "marginBottom": "20px"}, children=[
+dash_app.layout = html.Div(className="base-div", children=[
+    html.Div(className="input-button-container", children=[
 
         html.Div(children=[
             dcc.Input(
                 type="text", 
                 id="artist_link",
-                placeholder="Enter the artist name or link", 
-                style={
-                    "borderRadius": "50px",  
-                    "border": "2px solid black",  
-                    "marginRight": "10px",  
-                    "paddingLeft": "5px",
-                    "paddingRight": "5px"
-                }
+                className="artist-input",
+                placeholder="Enter the artist name or link"
             ),
-            html.Button("Generate graph", id="generate-button", style={
-                "backgroundColor": "#1DB954", 
-                "border": "none",
-                "borderRadius": "25px", 
-                "color": "white" 
-            })
+            html.Button("Generate graph", id="generate-button", className="generate-graph-button")
         ]),
         
-    html.Div(id="artist-details", style={"display": "flex", "alignItems": "center"}, children=[
+    html.Div(id="artist-details", className="artist-details-div", children=[
     ]),
 
 
     ]),
     
 
-    html.Div(style={"display": "flex", "height": "100%", "flexDirection": "row", "overflow": "hidden"}, children=[
-        html.Div(id='graph-container', style={"width": "50%", "paddingBottom": "50%", "position": "relative", "flexShrink": 0}, children=[
-            dcc.Graph(id='artist-network', style={
-                "position": "absolute",
-                "height": "100%",
-                "width": "100%",
-                "top": "0",
-                "left": "0"
-            }),
+    html.Div(className="graph-details-div", children=[
+        html.Div(id='graph-container', className="graph-container-div", children=[
+            dcc.Graph(id='artist-network', className="artist-network-graph"),
         ]),
 
-        html.Div(id='click-data', style={
-            "flex": "1",
-            "overflowY": "auto",
-            "maxHeight": "500px",
-            "width": "50%",
-            "paddingLeft": "20px",
-            "color": "inherit",  
-            "textDecoration": "none"  
-        }, children=[
-            html.Button('Generate graph for artist', id='gen-selec-artist', n_clicks=0, style={'display': 'none'}),
+        html.Div(id='click-data', className="click-data-div", children=[
+            html.Button('Generate graph for artist', id='gen-selec-artist', n_clicks=0, className="gen-selec-artist-hidden"),
             html.Div(id='songs-list', children='Click on a node to see more details')
         ])
     ]),
@@ -106,7 +81,7 @@ def process_artist_collabs(input_artist):
 def display_click_data(clickData):
     if not clickData:
         return [html.Div([
-                html.Button('Generate graph for artist', id='gen-selec-artist', n_clicks=0, style={'display': 'none'}),
+                html.Button('Generate graph for artist', id='gen-selec-artist', n_clicks=0, className="gen-selec-artist-hidden"),
                 html.Div('Click on a node to see more details')
             ]), dash.no_update]
 
@@ -114,57 +89,32 @@ def display_click_data(clickData):
     songs_list = artist_data_store["songs"].get(node_clicked_id, [])
 
     artist_image_url = artist_data_store["artist_info"].get(node_clicked_id, {}).get('url', 'URL_DEFAULT')
-    artist_image = html.Img(src=artist_image_url, style={
-        "width": "50px", 
-        "height": "50px", 
-        "borderRadius": "50%",
-        "marginRight": "10px"
-    })
+    artist_image = html.Img(src=artist_image_url, className="artist-image-class")
 
-    generate_button_for_artist = html.Button('Generate graph for artist', id='gen-selec-artist', n_clicks=0, **{'data-artist-id': node_clicked_id})
-    generate_button_for_artist.style = {
-            "backgroundColor": "#1DB954", 
-            "border": "none",
-            "borderRadius": "25px", 
-            "color": "white", 
-            "marginLeft": "auto"
-        }
+    generate_button_for_artist = html.Button('Generate graph for artist', id='gen-selec-artist', n_clicks=0, className="gen-selec-artist-shown", **{'data-artist-id': node_clicked_id})
     
 
 
     artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
     artist_spotify_url = ARTIST_URL_PREFIX + node_clicked_id
-    artist_name_link = html.A([artist_image, artist_name_display], href=artist_spotify_url, target="_blank", className="artist-link", style={
-                              "textDecoration": "none", 
-                              "color": "inherit", 
-                              "display": "flex", 
-                              "alignItems": "center"
-                          })
+    artist_name_link = html.A([artist_image, artist_name_display], href=artist_spotify_url, target="_blank", className="artist-link")
 
-    artist_name = html.Div([artist_name_link, generate_button_for_artist], style={
-        'fontWeight': 'bold', 
-        'fontSize': 'larger', 
-        'marginBottom': '10px',
-        'display': 'flex',
-        'alignItems': 'center'
-    })
+    artist_name = html.Div([artist_name_link, generate_button_for_artist],  className="artist-name-class")
 
     gallery_items = []
     for song_id in songs_list:
         song_info = artist_data_store["registered_songs"][song_id]
-        song_title = html.Div(song_info['name'], style={"textAlign": "center"})
+        song_title = html.Div(song_info['name'], className="song-title-class")
 
         audio_preview = html.Audio(src=song_info['preview'], id=f"audio-{song_id}", controls=False) 
 
         song_thumbnail = html.Img(src=song_info['thumbnail'], 
-                             className="song-thumbnail", 
-                             style={"width": "100px", "display": "block", "margin": "auto"},
+                             className="song-thumbnail",
                              **{'data-song-id': song_id})
 
 
         song_item = html.Div([song_thumbnail, song_title, audio_preview], 
-                     className="gallery-item-div", 
-                     style={"display": "inline-block", "margin": "10px"})
+                     className="gallery-item-div")
 
 
         gallery_item = html.A(song_item, href=song_info['url'], target="_blank", className="gallery-item")
@@ -221,8 +171,8 @@ def unified_update_graph(n_clicks_generate, n_clicks_selected, input_artist, art
 
     artist_details = []
     if artist_name and artist_image:
-        artist_details.append(html.Div(artist_name, style={"marginRight": "10px", "fontSize": "larger", "fontWeight": "bold"}))
-        artist_details.append(html.Img(src=artist_image, alt=artist_name, style={"width": "50px", "height": "50px", "borderRadius": "50%"}))
+        artist_details.append(html.Div(artist_name, className="artist-name-detail"))
+        artist_details.append(html.Img(src=artist_image, alt=artist_name, className="artist-image-detail"))
 
 
 
