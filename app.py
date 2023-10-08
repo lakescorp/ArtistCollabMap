@@ -97,9 +97,24 @@ def display_click_data(clickData):
 
     artist_name_display = artist_data_store["artist_info"][node_clicked_id]['name']
     artist_spotify_url = ARTIST_URL_PREFIX + node_clicked_id
+
+    total_collaborations = artist_data_store["songs"][node_clicked_id]
+    last_collab_date = artist_data_store["last_artist_collab"].get(node_clicked_id, None)
+    genres_list = artist_data_store["artist_info"][node_clicked_id]['genres']
+
+
+
     artist_name_link = html.A([artist_image, artist_name_display], href=artist_spotify_url, target="_blank", className="artist-link")
 
-    artist_name = html.Div([artist_name_link, generate_button_for_artist],  className="artist-name-class")
+    artist_details_container = html.Div([
+        html.Div([artist_name_link, generate_button_for_artist], style={'fontWeight': 'bold', 'fontSize': 'larger', 'marginBottom': '10px', 'display': 'flex',"alignItems": "center"}),
+        html.Div([
+            html.Div(f"📀 Total: {len(total_collaborations)}"),
+            html.Div(f"📅 Last: {last_collab_date.strftime('%d-%m-%Y')}" if last_collab_date else ""),
+            html.Div(f"🎷Genres: {', '.join(genres_list)}" if genres_list else "") 
+        ], style={'display': 'flex','justifyContent': 'space-around'})   
+    ], className='artist-details-container')
+
 
     gallery_items = []
     for song_id in songs_list:
@@ -120,7 +135,7 @@ def display_click_data(clickData):
         gallery_item = html.A(song_item, href=song_info['url'], target="_blank", className="gallery-item")
         gallery_items.append(gallery_item)
 
-    return html.Div([artist_name] + gallery_items), node_clicked_id
+    return html.Div([artist_details_container] + gallery_items), node_clicked_id
 
 
 @dash_app.callback(
@@ -162,6 +177,7 @@ def unified_update_graph(n_clicks_generate, n_clicks_selected, input_artist, art
     artist_data_store["songs"] = artist_songs
     artist_data_store["artist_info"] = artist_info
     artist_data_store["registered_songs"] = registered_songs
+    artist_data_store["last_artist_collab"] = last_artist_collab
 
     fig = graphInstance.generate_graph(total_artists, registered_songs, last_artist_collab, artist_data, artist_info, 0)
     
