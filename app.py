@@ -179,7 +179,7 @@ def unified_update_graph(n_clicks_generate, n_clicks_selected, input_artist, art
     artist_data_store["registered_songs"] = registered_songs
     artist_data_store["last_artist_collab"] = last_artist_collab
 
-    fig = graphInstance.generate_graph(total_artists, registered_songs, last_artist_collab, artist_data, artist_info, 0)
+    fig = graphInstance.generate_graph(total_artists, registered_songs, last_artist_collab, artist_info, 0)
     
     artist_name = artist_data_store["artist_info"].get(artist_data["id"], {}).get('name', None) if artist_data else None
     artist_image = artist_data_store["artist_info"].get(artist_data["id"], {}).get('url', None) if artist_data else None

@@ -2,28 +2,27 @@ import plotly.graph_objects as go
 import networkx as nx
 from datetime import datetime as dt
 import os
-import random
 from utilities import Utilities as utils
 
 class Graph:
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, log_scale=True):
         os.environ["PATH"] += os.pathsep + os.getenv('graphizRoute')
+        self.log_scale = log_scale
         self.node_base_size = 300
-        self.color_list = ["#FF5454",'#FF9E54','#FFD454','#DAFF54','#A7FF54','#54FF7F','#54FFE3','#54DAFF','#AF54FF','#E054FF','#FF54EE','#FF5496','#FF545A']
+        if self.log_scale:
+            self.node_base_size = 40
         self.debug = debug
 
+    def get_color_by_genre(self, artist_genres):
+        if artist_genres:  
+            genre = artist_genres[0]  
+            color = utils.get_genre_color(genre) 
+        else:
+            color = utils.random_color() 
 
+        return color
 
-    def random_color_from_list(self):
-        """
-        Generates a random color from the color list.
-
-        Returns:
-            str: A randomly selected color from `color_list`.
-        """
-        return self.color_list[random.randrange(0,len(self.color_list))]
-
-    def generate_graph(self, total_artists, registered_songs, last_collab_artist, artist_data, artists_info, level=0):
+    def generate_graph(self, total_artists, registered_songs, last_collab_artist, artists_info, level=0):
         """
         Generates a graph based on the given data.
 
@@ -69,17 +68,21 @@ class Graph:
         G = nx.Graph(scale=1)
         G.add_node(max_value)
         node_sizes.append(total_artists[second_max_value])
-        colors.append(self.random_color_from_list())
+        colors.append(self.get_color_by_genre(artists_info[max_value]['genres']))
 
         for artist, songs in total_artists.items():
+            artist_genres = artists_info[artist]['genres']
+            color = self.get_color_by_genre(artist_genres)
+            
             if artist == max_value:
                 continue
+                
             G.add_node(artist)
             if self.debug:
                 print(artist, songs, deltas_datetime[artist])
             G.add_edge(max_value, artist, color='black', weight=deltas_datetime[artist])
             node_sizes.append(songs)
-            colors.append(self.random_color_from_list())
+            colors.append(color)
 
         if level >= 1:
             for song, artists in registered_songs.items():
@@ -92,7 +95,12 @@ class Graph:
                                 G.add_edge(reduced_list[i], reduced_list[x], color='g')
 
         node_sizes = utils.normalize(node_sizes, 0.1, 1)
-        node_sizes = [item * self.node_base_size for item in node_sizes]
+        if self.log_scale:
+            node_sizes = [self.node_base_size + self.node_base_size * (size**0.5) for size in node_sizes]
+        else:
+            node_sizes = [item * self.node_base_size for item in node_sizes]
+        
+
 
         pos = nx.kamada_kawai_layout(G)
         
@@ -162,8 +170,9 @@ class Graph:
 
         layout = go.Layout(
             showlegend=False,
+            dragmode="pan",
             hovermode='closest',
-            margin=dict(b=0, l=0, r=0, t=40),
+            margin=dict(b=0, l=0, r=0, t=0),
             annotations=[],
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))

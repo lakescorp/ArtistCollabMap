@@ -1,4 +1,5 @@
-import json, random
+import json, random, os
+import colorsys
 
 class Utilities:
     def saveResponse(response, filename):
@@ -18,15 +19,20 @@ class Utilities:
             data = json.load(json_file)
             return data
 
-    def random_color():
+    def random_color(saturation=1.0, value=1.0):
         """
-        Generate a random color in hexadecimal format.
+        Generate a random color with constant saturation in hexadecimal format.
+
+        Parameters:
+            saturation (float): Saturation of the color. Default is 1.0 (full saturation).
+            value (float): Value (brightness) of the color. Default is 1.0 (full brightness).
 
         Returns:
-            str: A random color in hexadecimal format (e.g., '#00FF00').
+            str: A random color in hexadecimal format.
         """
-        r = lambda: random.randint(0,255)
-        return '#%02X%02X%02X' % (r(), r(), r())
+        hue = random.random()  # Random hue between 0 and 1
+        r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
+        return '#%02X%02X%02X' % (int(r*255), int(g*255), int(b*255))
     
     def normalize(arr, t_min, t_max):
         """
@@ -47,4 +53,21 @@ class Utilities:
             temp = (((i - min(arr))*diff)/diff_arr) + t_min
             norm_arr.append(temp)
         return norm_arr
+    
+    @staticmethod
+    def get_genre_color(genre, filename="data/genre_colors.json"):
+        if os.path.exists(filename):
+            with open(filename, "r") as f:
+                genre_colors = json.load(f)
+        else:
+            genre_colors = {}
+
+        if genre not in genre_colors:
+            genre_colors[genre] = Utilities.random_color()
+
+            with open(filename, "w") as f:
+                json.dump(genre_colors, f)
+
+        return genre_colors[genre]
+
                 
