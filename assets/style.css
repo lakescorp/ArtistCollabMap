@@ -142,6 +142,10 @@ body {
 
 .song-title-class {
     text-align: center;
+    white-space: nowrap;          /* This prevents the text from wrapping to the next line */
+    overflow: hidden;            /* This hides the overflowed text */
+         /* This adds the "..." at the end when the text overflows */
+    max-width: 100px; 
 }
 
 .song-thumbnail {
