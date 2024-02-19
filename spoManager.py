@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 ARTIST_PATH = os.path.join(".", "data", "{}")
 ARTIST_URL_PREFIX = "https://open.spotify.com/artist/"
 
+RESPONESE_OFFSET = 20
+
 class SpotifyManager:
     def __init__(self, debug=False):
         load_dotenv()
@@ -99,7 +101,7 @@ class SpotifyManager:
         offset = 0
 
         while True:
-            response = self.sp.artist_albums(artist_id, album_type="album,single,appears_on", offset=offset)
+            response = self.sp.artist_albums(artist_id, album_type="album,single,appears_on", offset=offset) # ,
             if not response.get('next'):
                 all_artist_details = []
 
@@ -127,8 +129,12 @@ class SpotifyManager:
                 self._save_response(os.path.join(artist_folder, "artistData.json"), artist_response)
                 self._save_response(os.path.join(artist_folder, "artistInfo.json"), artists_info)
                 return total_artists, registered_songs, last_collab_artist, artist_response, artists_info
-
-            for album in response['items']:
+          
+            for album in response['items']: 
+                # Skip compilation albums
+                if album['album_type'] == 'compilation':
+                    continue
+                
                 release_date_format = '%Y' if album["release_date_precision"] == "year" else '%Y-%m-%d'
                 release_date = dt.strptime(album['release_date'], release_date_format)
                 album_tracks = self.sp.album_tracks(album["uri"])
@@ -155,4 +161,4 @@ class SpotifyManager:
                                 last_collab_artist[a_id] = max(last_collab_artist.get(a_id, release_date), release_date)
                                 if a_id not in ids_to_fetch:
                                     ids_to_fetch.append(a_id)
-            offset += 20 
+            offset += RESPONESE_OFFSET 
