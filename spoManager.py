@@ -54,6 +54,22 @@ class SpotifyManager:
         return items[0]['id'] if items else None
 
     def getArtistCollabs(self, artist_id, force=False):
+        """
+        Retrieves the artist collaborations for a given artist ID or name.
+
+        Args:
+            artist_id (str): The ID or name of the artist.
+            force (bool, optional): If True, forces the retrieval of artist collaborations even if the data already exists. 
+                                    Defaults to False.
+
+        Returns:
+            tuple: A tuple containing the following information:
+                - total_artists (dict): A dictionary mapping artist IDs to the number of collaborations.
+                - registered_songs (dict): A dictionary mapping track IDs to track information.
+                - last_collab_artist (dict): A dictionary mapping artist IDs to the date of their last collaboration.
+                - artist_response (dict): Information about the artist.
+                - artists_info (dict): Information about the collaborating artists.
+        """
         # First, we'll attempt to determine if the input is a name or ID.
         # If the input does not start with the Spotify URL prefix and does not seem to have the format of a Spotify ID,
         # then we'll assume it's a name and try to search for it.

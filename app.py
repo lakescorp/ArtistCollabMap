@@ -1,3 +1,10 @@
+"""
+This script defines a Dash application that generates a graph of artist collaborations based on input from the user.
+The application uses the SpotifyManager class from spoManager module and the Graph class from graph module.
+The user can enter an artist name or link, and the application will generate a graph showing the collaborations between artists.
+The graph is interactive, allowing the user to click on nodes to see more details about the artist and their songs.
+"""
+
 from spoManager import SpotifyManager
 from graph import Graph
 import dash
@@ -56,8 +63,23 @@ dash_app.layout = html.Div(className="base-div", children=[
 
 
 
-# Helper function for processing artist collabs
+
 def process_artist_collabs(input_artist):
+    """
+    Process the artist collaborations.
+
+    Args:
+        input_artist (str): The input artist name.
+
+    Returns:
+        tuple: A tuple containing the following elements:
+            - total_artists (int): The total number of artists.
+            - registered_songs (dict): A dictionary of registered songs.
+            - last_artist_collab (str): The last artist collaboration.
+            - artist_data (dict): A dictionary of artist data.
+            - artist_info (dict): A dictionary of artist information.
+            - artist_songs (dict): A dictionary of artist songs.
+    """
     total_artists, registered_songs, last_artist_collab, artist_data, artist_info = spoManagerInstance.getArtistCollabs(input_artist, False)
     artist_songs = {}
 
@@ -70,7 +92,6 @@ def process_artist_collabs(input_artist):
 
 
 
-# Callback para mostrar las canciones del artista clickeado en el gráfico
 @dash_app.callback(
     [
         Output('click-data', 'children'),
@@ -79,6 +100,17 @@ def process_artist_collabs(input_artist):
     [Input('artist-network', 'clickData')]
 )
 def display_click_data(clickData):
+    """
+    Callback function that displays information based on the clicked data in the artist network.
+
+    Parameters:
+    - clickData (dict): The data of the clicked node in the artist network.
+
+    Returns:
+    - list: A list containing two elements:
+        - html.Div: The HTML div containing the artist details and gallery items.
+        - str: The ID of the clicked artist.
+    """
     if not clickData:
         return [html.Div([
                 html.Button('Generate graph for artist', id='gen-selec-artist', n_clicks=0, className="gen-selec-artist-hidden"),
@@ -153,6 +185,19 @@ def display_click_data(clickData):
     ]
 )
 def unified_update_graph(n_clicks_generate, n_clicks_selected, input_artist, artist_id):
+    """
+    Callback function that updates the graph and artist details based on user interactions.
+
+    Parameters:
+    - n_clicks_generate (int): Number of times the generate button is clicked.
+    - n_clicks_selected (int): Number of times the select artist button is clicked.
+    - input_artist (str): The artist name entered by the user.
+    - artist_id (str): The ID of the selected artist.
+
+    Returns:
+    - fig (object): The updated graph figure.
+    - artist_details (list): The updated artist details.
+    """
     ctx = dash.callback_context
 
     if not ctx.triggered:

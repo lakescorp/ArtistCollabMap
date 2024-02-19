@@ -56,6 +56,17 @@ class Utilities:
     
     @staticmethod
     def get_genre_color(genre, filename="data/genre_colors.json"):
+        """
+        Retrieves the color associated with a given genre from a JSON file.
+        
+        Args:
+            genre (str): The genre for which to retrieve the color.
+            filename (str, optional): The path to the JSON file containing genre-color mappings. 
+                Defaults to "data/genre_colors.json".
+        
+        Returns:
+            str: The color associated with the given genre.
+        """
         if os.path.exists(filename):
             with open(filename, "r") as f:
                 genre_colors = json.load(f)
