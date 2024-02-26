@@ -2,7 +2,7 @@
 
 This application generates a network graph of artist collaborations using the Spotify API. Input a Spotify artist URL, and the program will showcase a visualization of that artist's collaborations with other artists.
 
-![Preview](readmeassets/example.gif)
+https://github.com/lakescorp/ArtistCollabMap/assets/57636815/b322480e-2c17-46c7-89e7-f6247ba05ca4
 
 ## 📁 Files:
 
