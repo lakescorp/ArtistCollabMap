@@ -15,7 +15,7 @@ from dash.exceptions import PreventUpdate
 dash_app = dash.Dash(__name__)
 
 ARTIST_URL_PREFIX = "https://open.spotify.com/artist/"
-spoManagerInstance = SpotifyManager(True)
+spoManagerInstance = SpotifyManager(debug=True)
 graphInstance = Graph()
 artist_data_store = {
     "songs": {},

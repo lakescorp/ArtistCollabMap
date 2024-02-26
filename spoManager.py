@@ -11,7 +11,7 @@ ARTIST_URL_PREFIX = "https://open.spotify.com/artist/"
 RESPONESE_OFFSET = 20
 
 class SpotifyManager:
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, country = "ES"):
         load_dotenv()
         client_id = os.getenv('clientID')
         client_secret = os.getenv('clientSecret')
@@ -29,6 +29,7 @@ class SpotifyManager:
         except Exception as e:
             raise RuntimeError("Error authenticating with Spotify: " + str(e))    
         self.debug = debug
+        self.country = country
         print("Spotify working")
 
 
@@ -98,38 +99,24 @@ class SpotifyManager:
         ids_to_fetch = []
         artist_response = self.sp.artist(artist_id)
         artist_name = artist_response['name']
-        offset = 0
 
-        while True:
-            response = self.sp.artist_albums(artist_id, album_type="album,single,appears_on", offset=offset) # ,
-            if not response.get('next'):
-                all_artist_details = []
+        # Count of albums retrieved for DEBUG purposes
+        total_retrieved = 0
 
-                for i in range(0, len(ids_to_fetch), 50):
-                    ids_chunk = ids_to_fetch[i:i+50]
-                    chunk_details = self.sp.artists(ids_chunk)
-                    all_artist_details.extend(chunk_details['artists'])
+        first_iteration = True
+        response = None
 
-                artists_details = {'artists': all_artist_details}
-                
-                artists_info = {artist['id']: {"name": artist['name'],
-                               "url": artist['images'][0]['url'] if artist['images'] else None, 
-                               "genres": artist['genres'] if 'genres' in artist else []} for artist in artists_details['artists']}           
+        while first_iteration or response['next']:
+            if first_iteration:
+                first_iteration = False
+                response = self.sp.artist_albums(artist_id, limit=50, country=self.country, album_type="album,single,appears_on") # ,
+            else:
+                response = self.sp.next(response)
+                     
+            if self.debug:
+                total_retrieved += len(response['items'])
+                print(f"Obtained {response['offset']} / {response['total']} -> items: {len(response['items'])}, total: {total_retrieved}")
 
-                artists_info[artist_id] = {
-                    'name': artist_name,
-                    'url': artist_response['images'][0]['url'] if artist_response['images'] else None,
-                    'genres': artist_response['genres']
-                }
-
-                last_collab_artist = {key: elem.strftime('%Y-%m-%d') for key, elem in last_collab_artist.items()}
-                self._save_response(os.path.join(artist_folder, "totalArtists.json"), total_artists)
-                self._save_response(os.path.join(artist_folder, "registeredSongs.json"), registered_songs)
-                self._save_response(os.path.join(artist_folder, "lastCollab.json"), last_collab_artist)
-                self._save_response(os.path.join(artist_folder, "artistData.json"), artist_response)
-                self._save_response(os.path.join(artist_folder, "artistInfo.json"), artists_info)
-                return total_artists, registered_songs, last_collab_artist, artist_response, artists_info
-          
             for album in response['items']: 
                 # Skip compilation albums
                 if album['album_type'] == 'compilation':
@@ -161,4 +148,31 @@ class SpotifyManager:
                                 last_collab_artist[a_id] = max(last_collab_artist.get(a_id, release_date), release_date)
                                 if a_id not in ids_to_fetch:
                                     ids_to_fetch.append(a_id)
-            offset += RESPONESE_OFFSET 
+
+        all_artist_details = []
+
+        for i in range(0, len(ids_to_fetch), 50):
+            ids_chunk = ids_to_fetch[i:i+50]
+            chunk_details = self.sp.artists(ids_chunk)
+            all_artist_details.extend(chunk_details['artists'])
+
+        artists_details = {'artists': all_artist_details}
+        
+        artists_info = {artist['id']: {"name": artist['name'],
+                                        "url": artist['images'][0]['url'] if artist['images'] else None, 
+                                        "genres": artist['genres'] if 'genres' in artist else []
+                                        } for artist in artists_details['artists']}           
+
+        artists_info[artist_id] = {
+            'name': artist_name,
+            'url': artist_response['images'][0]['url'] if artist_response['images'] else None,
+            'genres': artist_response['genres']
+        }
+
+        last_collab_artist = {key: elem.strftime('%Y-%m-%d') for key, elem in last_collab_artist.items()}
+        self._save_response(os.path.join(artist_folder, "totalArtists.json"), total_artists)
+        self._save_response(os.path.join(artist_folder, "registeredSongs.json"), registered_songs)
+        self._save_response(os.path.join(artist_folder, "lastCollab.json"), last_collab_artist)
+        self._save_response(os.path.join(artist_folder, "artistData.json"), artist_response)
+        self._save_response(os.path.join(artist_folder, "artistInfo.json"), artists_info)
+        return total_artists, registered_songs, last_collab_artist, artist_response, artists_info
